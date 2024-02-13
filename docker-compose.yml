@@ -105,6 +105,34 @@ services:
             - '${PUSHER_METRICS_PORT:-9601}:9601'
         networks:
             - sail
+    mongo:
+        image: 'mongo:6.0'
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: '${MONGO_USERNAME}'
+            MONGO_INITDB_ROOT_PASSWORD: '${MONGO_PASSWORD}'
+            MONGO_INITDB_DATABASE: '${MONGO_DATABASE}'
+        ports:
+            - "27017:27017"
+        volumes:
+            - 'sail-mongodb:/data/mdb'
+        networks:
+            - sail
+    mongo-express:
+        image: mongo-express
+        environment:
+            - ME_CONFIG_MONGODB_SERVER=mongo
+            - ME_CONFIG_MONGODB_PORT=27017
+            - ME_CONFIG_MONGODB_AUTH_USERNAME=${MONGO_USERNAME}
+            - ME_CONFIG_MONGODB_AUTH_PASSWORD=${MONGO_PASSWORD}
+            - ME_CONFIG_BASICAUTH_USERNAME=user
+            - ME_CONFIG_BASICAUTH_PASSWORD=pass
+        depends_on:
+            - mongo
+        ports:
+          - "8888:8081"
+        networks:
+            - sail
 networks:
     sail:
         driver: bridge
@@ -114,4 +142,6 @@ volumes:
     sail-redis:
         driver: local
     sail-meilisearch:
+        driver: local
+    sail-mongodb:
         driver: local
